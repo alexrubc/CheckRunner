@@ -6,35 +6,11 @@ import java.util.regex.Pattern;
 
 
 public class CheckRunner {
-	//метод создания файла
-	public void createFile(String content) {
-		try {
-      File myObj = new File("Result.csv");
-      if (myObj.createNewFile()) {
-        System.out.println("File created: " + myObj.getName());
-      } else {
-        System.out.println("File already exists.");
-      }
-    } catch (IOException e) {
-      System.out.println("An error occurred.");
-      e.printStackTrace();
-    }
-	 try {
-      FileWriter myWriter = new FileWriter("Result.csv");
-      myWriter.write(content);
-      myWriter.close();
-      System.out.println("Successfully wrote to the file.");
-    } catch (IOException e) {
-      System.out.println("An error occurred.");
-      e.printStackTrace();
-    }
-	}
-	
 	
 	// Расчет стоимости позиции без дисконтной карты
     public void PriceWithoutDiscount(float price, int inOrderQuantity, String wholesale) {
     if(wholesale.equals("+") && inOrderQuantity > 4) {
-		  System.out.println("Wholesale price " + price*inOrderQuantity*0.9);	
+		  System.out.println("Price without discount " + price*inOrderQuantity + "\n" + "Wholesale price " + price*inOrderQuantity*0.9f + "\n" + "wholesale discount amount 10%");	
     } else {
 		
 	    System.out.println("The price is " + price*inOrderQuantity);	
@@ -45,9 +21,9 @@ public class CheckRunner {
     public void PriceWithDiscount(float price, int inOrderQuantity, String wholesale,int discountAmount) {
     if(wholesale.equals("+") && inOrderQuantity > 4) {
 		discountAmount = 10;
-		  System.out.println("Wholesale price " + (price*inOrderQuantity-price*inOrderQuantity/100*discountAmount) + " Discount amount " + discountAmount);	
+		  System.out.println("Price without discount is " + price*inOrderQuantity + "\n" + "Wholesale price " + (price*inOrderQuantity-price*inOrderQuantity/100*discountAmount) + " Discount amount " + discountAmount);	
     } else {
-		System.out.println("Discount price " + (price*inOrderQuantity-price*inOrderQuantity/100*discountAmount));	
+		System.out.println("Price withount discount is " + price*inOrderQuantity + "\n" + "Discount price is " + (price*inOrderQuantity-price*inOrderQuantity/100*discountAmount) + "\n" + "Discount amount is " + discountAmount + "%");	
     };
 	}
 
@@ -192,21 +168,21 @@ public class CheckRunner {
 		System.out.println (description + " price " + price + " quantity " + inOrderQuantity);
 	    CheckRunner priceCalc = new CheckRunner();
         priceCalc.PriceWithDiscount(price,inOrderQuantity,wholesale,discountAmount);
-	    System.out.println("discount from csv");
+	    System.out.println("existing discount card");
 	}
 	catch(Exception e) {
 		String[] discountCardArray = args[args.length - 2].split("=");
         try {
 		String discountCardNumber = discountCardArray[1];
 		int discountAmount = 10;
-		System.out.println ("custom discount");
+		System.out.println ("custom discount card");
 		System.out.println (description + " price " + price + " quantity " + inOrderQuantity + " discountAmount " + discountAmount);
 		
 		CheckRunner priceCalc = new CheckRunner();
         priceCalc.PriceWithDiscount(price,inOrderQuantity,wholesale,discountAmount);
 		}
 		catch (Exception f) {
-			System.out.println ("no discount");
+			System.out.println ("no discount card");
 			System.out.println (description + " price " + price + " quantity " + inOrderQuantity);
 			
 			CheckRunner priceCalc = new CheckRunner();
