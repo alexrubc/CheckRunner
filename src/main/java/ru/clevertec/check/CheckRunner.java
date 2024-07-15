@@ -6,43 +6,9 @@ import java.util.regex.Pattern;
 
 
 public class CheckRunner {
-	
-	// Расчет стоимости позиции без дисконтной карты
-    public void PriceWithoutDiscount(float price, int inOrderQuantity, String wholesale) {
-    if(wholesale.equals("+") && inOrderQuantity > 4) {
-		  System.out.println("Price without discount " + price*inOrderQuantity + "\n" + "Wholesale price " + price*inOrderQuantity*0.9f + "\n" + "wholesale discount amount 10%");	
-    } else {
-		
-	    System.out.println("The price is " + price*inOrderQuantity);	
-      };
-	}
-	
-	// Расчет стоимости позиции с дисконтной картой
-    public void PriceWithDiscount(float price, int inOrderQuantity, String wholesale,int discountAmount) {
-    if(wholesale.equals("+") && inOrderQuantity > 4) {
-		discountAmount = 10;
-		  System.out.println("Price without discount is " + price*inOrderQuantity + "\n" + "Wholesale price " + (price*inOrderQuantity-price*inOrderQuantity/100*discountAmount) + " Discount amount " + discountAmount);	
-    } else {
-		System.out.println("Price withount discount is " + price*inOrderQuantity + "\n" + "Discount price is " + (price*inOrderQuantity-price*inOrderQuantity/100*discountAmount) + "\n" + "Discount amount is " + discountAmount + "%");	
-    };
-	}
 
     public static void main(String[] args) {
-		
-	//списки для хранения данных из products.csv и discountCards.csv		
-	ArrayList<String> productsList = new ArrayList<String>();
-	ArrayList<String> cardsList = new ArrayList<String>();
 	
-	//Пустые множества для хранения позиций в чеке
-	String[] purchasedProductsId = new String[args.length];
-	String[] purchasedProductsQuantity = new String[args.length];
-		 
-	//декларирование переменных:
-	int pLinesIndex = 0; //переменная количества строк в products.csv
-	int cLinesIndex = 0; //переменная количества строк в discountCards.csv
-	int idQuantityPairsNumber = 0; //переменная количества пар значений продукт-количество во входящих аргументах
-	int withDiscount = 0;
-		
 	//проверка входящих аргументов
 	Pattern argsValidationPattern = Pattern.compile("^\\[([0-9]*-[0-9]*, ){1,}(discountCard=[0-9]{4}, )?balanceDebitCard=(-)?[0-9]{1,}(\\.[0-9]{2})?\\]$");
     Matcher matcherArgs = argsValidationPattern.matcher(Arrays.toString(args));
@@ -53,13 +19,26 @@ public class CheckRunner {
 	Matcher matcherDiscount = argsDiscount.matcher(Arrays.toString(args));
     boolean discountCard = matcherDiscount.find();
 	
-	//определение сценария
+	//Пустые множества для хранения позиций в чеке
+	String[] purchasedProductsId = new String[args.length-1];
+	String[] purchasedProductsQuantity = new String[args.length-1];
+	
+	//списки для хранения данных из products.csv и discountCards.csv		
+	ArrayList<String> productsList = new ArrayList<String>();
+	ArrayList<String> cardsList = new ArrayList<String>();
+		 
+	//декларирование переменных:
+	int pLinesIndex = 0; //для количества строк products.csv
+	int cLinesIndex = 0; //для количества строк discountCards.csv
+	int idQuantityPairsNumber = 0; //для количества пар значений продукт-количество во входящих аргументах
+		
+	//проверка использования дисконта
     if(validArgs) {
       if(discountCard) {
 		  idQuantityPairsNumber = args.length - 2;
     } else {
 		idQuantityPairsNumber = args.length - 1;
-    };
+    }
     } else {
       System.out.println("invalid arguments input");
     }
@@ -71,10 +50,9 @@ public class CheckRunner {
 				 String[] args_values_sep = args[i].split("-");
 				 purchasedProductsId[i] = args_values_sep[0];
 				 purchasedProductsQuantity[i] = args_values_sep[1];
-				 System.out.println("Product id " + args_values_sep[0] + " in quantity " + args_values_sep[1]);
 		 }
 	
-    //считывание products.csv	
+    //считывает products.csv	
 	try {
       BufferedReader reader = new BufferedReader(new FileReader("main\\java\\resources\\products.csv"));
 	  String line;
@@ -88,7 +66,7 @@ public class CheckRunner {
       e.printStackTrace();
     }
 	
-	//считывание discountCards.csv	
+	//считывает discountCards.csv	
 	try {
       BufferedReader reader = new BufferedReader(new FileReader("main\\java\\resources\\discountCards.csv"));
 	  String line;
@@ -102,11 +80,10 @@ public class CheckRunner {
       e.printStackTrace();
     }
 	
-	
-	//конвертирование списка продуктов во множество
+	//конвертирует список продуктов во множество
 	String[] productsArray = productsList.toArray(new String[pLinesIndex]);
 	
-	//конвертирование списка дисконтных карт во множество
+	//конвертирует список дисконтных карт во множество
 	String[] discountCardsArray = cardsList.toArray(new String[cLinesIndex]);
 	
 	//создает пустые множества для каждого столбца products.csv
@@ -121,7 +98,7 @@ public class CheckRunner {
 	String[] cardsNumberArray = new String[cLinesIndex]; //number
 	String[] cardsDiscountAmountArray = new String[cLinesIndex]; //discount amount
 	
-	//наполняет созданные множества столбцов products.csv
+	//наполняет множества столбцов products.csv
 	for (int i = 0;
 	     i < pLinesIndex;
 		 i = i + 1) {
@@ -133,7 +110,7 @@ public class CheckRunner {
 			 productsWholesaleArray[i] = productLine[4];
 		 }
 		 
-	//наполняет созданные множества столбцов discountCards.csv
+	//наполняет множества столбцов discountCards.csv
 	for (int i = 0;
 	     i < cLinesIndex;
 		 i = i + 1) {
@@ -143,51 +120,133 @@ public class CheckRunner {
 			 cardsDiscountAmountArray[i] = cardLine[2];
 		 }
 		 
-	//генерирует Result.csv
-	//BufferedWriter br = new BufferedWriter(new FileWriter(new File("abc.txt")));
-    //br.write("some text");
-	
-    //переменная индекса для последовательного вывода позиций в чек
+	//генерирует Result.csv	
 	int checkIndexCounter = 0;
-	
-	//переменные для генерации Result.csv
-	int productIndex = Arrays.asList(productsIdArray).indexOf(purchasedProductsId[checkIndexCounter]);
-    int inOrderQuantity = Arrays.asList(productsIdArray).indexOf(purchasedProductsQuantity[checkIndexCounter]);
-	String description = productsDescriptionArray[productIndex];
-	float price = Float.valueOf(productsPriceArray[productIndex]);
-	int stockQuantity = Integer.valueOf(productsQuantityArray[productIndex]);
-	String wholesale = productsWholesaleArray[productIndex];
-    
-	
-	
-    try {
-		String[] discountCardArray = args[args.length - 2].split("=");
-    String discountCardNumber = discountCardArray[1];
-	int existingDiscountIndex = Arrays.asList(cardsNumberArray).indexOf(discountCardNumber); //провереяет номер карты в discauntCards.csv
-		int discountAmount = Integer.valueOf(cardsDiscountAmountArray[existingDiscountIndex]);
-		System.out.println (description + " price " + price + " quantity " + inOrderQuantity);
-	    CheckRunner priceCalc = new CheckRunner();
-        priceCalc.PriceWithDiscount(price,inOrderQuantity,wholesale,discountAmount);
-	    System.out.println("existing discount card");
-	}
-	catch(Exception e) {
-		String[] discountCardArray = args[args.length - 2].split("=");
-        try {
-		String discountCardNumber = discountCardArray[1];
-		int discountAmount = 10;
-		System.out.println ("custom discount card");
-		System.out.println (description + " price " + price + " quantity " + inOrderQuantity + " discountAmount " + discountAmount);
+
+    if(discountCard) {
 		
-		CheckRunner priceCalc = new CheckRunner();
-        priceCalc.PriceWithDiscount(price,inOrderQuantity,wholesale,discountAmount);
-		}
-		catch (Exception f) {
-			System.out.println ("no discount card");
-			System.out.println (description + " price " + price + " quantity " + inOrderQuantity);
+		String[] discountCardArray = args[args.length - 2].split("=");
+        String discountCardNumber = discountCardArray[1];
+	    int existingDiscountIndex = Arrays.asList(cardsNumberArray).indexOf(discountCardNumber); //провереяет номер карты в discauntCards.csv
+		
+		//если дисконт есть в БД
+		if (existingDiscountIndex > 0) {
+		System.out.println("\nExisting discount card\n");	
+		
+	    int discountAmount = Integer.valueOf(cardsDiscountAmountArray[existingDiscountIndex]);
+		float [] checkSums = new float[args.length];
+		float positionPrice;
+		int productIndex;
+		int inOrderQuantity;
+		String description;
+		float price;
+		int stockQuantity;
+		String wholesale;
+        
+		//генерирует строки позиций
+		while(checkIndexCounter < purchasedProductsId.length-1) {
 			
-			CheckRunner priceCalc = new CheckRunner();
-            priceCalc.PriceWithoutDiscount(price,inOrderQuantity,wholesale);
+	    productIndex = Arrays.asList(productsIdArray).indexOf(purchasedProductsId[checkIndexCounter]);
+        inOrderQuantity = Arrays.asList(productsIdArray).indexOf(purchasedProductsQuantity[checkIndexCounter]);
+	    description = productsDescriptionArray[productIndex];
+	    price = Float.valueOf(productsPriceArray[productIndex]);
+	    stockQuantity = Integer.valueOf(productsQuantityArray[productIndex]);
+	    wholesale = productsWholesaleArray[productIndex];
+			
+			//проверяет возможность оптовой скидки на позицию 
+            if(wholesale.equals("+") && inOrderQuantity > 4) {
+
+			    positionPrice = price*inOrderQuantity-price*inOrderQuantity/100*discountAmount;
+			    checkSums[checkIndexCounter] = positionPrice;
+		        System.out.println(description + " " + inOrderQuantity + "pc" + " " + "Price " + price*inOrderQuantity + " Wholesale 10% " + "----" + positionPrice);	
+			} else {
+                   positionPrice = price*inOrderQuantity-price*inOrderQuantity/100*discountAmount;
+				checkSums[checkIndexCounter] = positionPrice;
+		        System.out.println(description + " " + inOrderQuantity + "pc" + " " + "Price " + price*inOrderQuantity + " Discount " + discountAmount + "% " + "----" + positionPrice);
+            }
+			checkIndexCounter++;
 		}
+        //стоимость всех позиций с примененными скидками
+		float totalPrice = 0;
+		for (int i = 0; i<checkSums.length; i++) {
+		totalPrice = totalPrice + checkSums[i];
+		}
+		System.out.println ("Total price ----" + totalPrice);
+		}
+		
+		//если дисконта нет в БД
+		if (existingDiscountIndex < 0) {
+			
+			System.out.println("\nCustom discount card 10%\n");	
+
+			int discountAmount = 10;
+			float [] checkSums = new float[args.length];
+		    float positionPrice;
+			int productIndex;
+			int inOrderQuantity;
+			String description;
+			float price;
+			int stockQuantity;
+			String wholesale;
+			
+		    while(checkIndexCounter < purchasedProductsId.length-1) {
+			
+	        productIndex = Arrays.asList(productsIdArray).indexOf(purchasedProductsId[checkIndexCounter]);
+            inOrderQuantity = Arrays.asList(productsIdArray).indexOf(purchasedProductsQuantity[checkIndexCounter]);
+	        description = productsDescriptionArray[productIndex];
+	        price = Float.valueOf(productsPriceArray[productIndex]);
+	        stockQuantity = Integer.valueOf(productsQuantityArray[productIndex]);
+	        wholesale = productsWholesaleArray[productIndex];
+			positionPrice = price*inOrderQuantity-price*inOrderQuantity/100*discountAmount;
+			checkSums[checkIndexCounter] = positionPrice;
+			
+            System.out.println(description + " " + inOrderQuantity + "pc" + " " + "Price " + price*inOrderQuantity + " Discount " + discountAmount + "% " + "----" + positionPrice);	
+		    checkIndexCounter++;
+			}
+
+        //стоимость всех позиций с примененными скидками
+		float totalPrice = 0;
+		for (int i = 0; i<checkSums.length; i++) {
+		totalPrice = totalPrice + checkSums[i];
+		}
+		System.out.println ("Total price ----" + totalPrice);
 	}
-	}
+	} else {
+		System.out.println ("\nNo discount card\n");
+		
+			float [] checkSums = new float[args.length];
+		    float positionPrice;
+			
+		    while (checkIndexCounter < purchasedProductsId.length) {
+			 
+		    //переменные для генерации Result.csv
+		    int productIndex = Arrays.asList(productsIdArray).indexOf(purchasedProductsId[checkIndexCounter]);
+            int inOrderQuantity = Arrays.asList(productsIdArray).indexOf(purchasedProductsQuantity[checkIndexCounter]);
+	        String description = productsDescriptionArray[productIndex];
+	        float price = Float.valueOf(productsPriceArray[productIndex]);
+	        int stockQuantity = Integer.valueOf(productsQuantityArray[productIndex]);
+	        String wholesale = productsWholesaleArray[productIndex];
+			
+			
+		        if (wholesale.equals("+") && inOrderQuantity > 4 ) {
+				
+				    positionPrice = price*inOrderQuantity*0.9f;
+		            checkSums[checkIndexCounter] = positionPrice;
+		            System.out.println(description + " " + inOrderQuantity + "pc " + "Price " + price*inOrderQuantity + " Wholesale -10% " + "----" + positionPrice);	
+                } else {
+			      positionPrice = price*inOrderQuantity;
+			      checkSums[checkIndexCounter] = positionPrice;
+	              System.out.println(description + " " + inOrderQuantity + "pc" + " " + "----" + positionPrice);	
+                }
+			
+            checkIndexCounter++;
+	     }
+		 
+		float totalPrice = 0;
+		for (int i = 0; i<checkSums.length; i++) {
+		totalPrice = totalPrice + checkSums[i];
+		}
+		System.out.println ("Total price ----" + totalPrice);
+}
+}
 }
