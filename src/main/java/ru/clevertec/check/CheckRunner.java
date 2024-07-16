@@ -6,6 +6,55 @@ import java.util.regex.Pattern;
 
 
 public class CheckRunner {
+	
+	//метод создания и записи файла
+	static void createFile(String content) {
+	try {
+      File myObj = new File("Result.csv");
+      if (myObj.createNewFile()) {
+        System.out.println("File created: " + myObj.getName());
+      } else {
+        System.out.println("File already exists.");
+      }
+    } catch (IOException e) {
+      System.out.println("An error occurred.");
+      e.printStackTrace();
+    }
+	try {
+      FileWriter myWriter = new FileWriter("Result.csv", true);
+      myWriter.write(content);
+      myWriter.close();
+      System.out.println("Successfully wrote to the file.");
+    } catch (IOException e) {
+      System.out.println("An error occurred.");
+      e.printStackTrace();
+    }
+	}
+	
+	//метод очистки существующего файла
+	static void clearFile(String content) {
+	try {
+      File myObj = new File("Result.csv");
+      if (myObj.createNewFile()) {
+        System.out.println("File created: " + myObj.getName());
+      } else {
+        System.out.println("File already exists.");
+      }
+    } catch (IOException e) {
+      System.out.println("An error occurred.");
+      e.printStackTrace();
+    }
+	try {
+      FileWriter myWriter = new FileWriter("Result.csv");
+      myWriter.write(content);
+      myWriter.close();
+      System.out.println("Successfully wrote to the file.");
+    } catch (IOException e) {
+      System.out.println("An error occurred.");
+      e.printStackTrace();
+    }
+	}
+
 
     public static void main(String[] args) {
 	
@@ -142,35 +191,58 @@ public class CheckRunner {
 		float price;
 		int stockQuantity;
 		String wholesale;
+		String content;
+		float totalPrice;
+		
+		clearFile(content="");
         
 		//генерирует строки позиций
 		while(checkIndexCounter < purchasedProductsId.length-1) {
 			
-	    productIndex = Arrays.asList(productsIdArray).indexOf(purchasedProductsId[checkIndexCounter]);
-        inOrderQuantity = Arrays.asList(productsIdArray).indexOf(purchasedProductsQuantity[checkIndexCounter]);
-	    description = productsDescriptionArray[productIndex];
-	    price = Float.valueOf(productsPriceArray[productIndex]);
-	    stockQuantity = Integer.valueOf(productsQuantityArray[productIndex]);
-	    wholesale = productsWholesaleArray[productIndex];
+	        productIndex = Arrays.asList(productsIdArray).indexOf(purchasedProductsId[checkIndexCounter]);
+            inOrderQuantity = Integer.valueOf(purchasedProductsQuantity[checkIndexCounter]);
+	        description = productsDescriptionArray[productIndex];
+	        price = Float.valueOf(productsPriceArray[productIndex]);
+	        stockQuantity = Integer.valueOf(productsQuantityArray[productIndex]);
+	        wholesale = productsWholesaleArray[productIndex];
 			
-			//проверяет возможность оптовой скидки на позицию 
-            if(wholesale.equals("+") && inOrderQuantity > 4) {
+			    if (inOrderQuantity <= stockQuantity) {
+					
+			        //проверяет возможность оптовой скидки на позицию 
+                    if(wholesale.equals("+") && inOrderQuantity > 4 && inOrderQuantity <= stockQuantity) {
 
-			    positionPrice = price*inOrderQuantity-price*inOrderQuantity/100*discountAmount;
-			    checkSums[checkIndexCounter] = positionPrice;
-		        System.out.println(description + " " + inOrderQuantity + "pc" + " " + "Price " + price*inOrderQuantity + " Wholesale 10% " + "----" + positionPrice);	
-			} else {
-                   positionPrice = price*inOrderQuantity-price*inOrderQuantity/100*discountAmount;
-				checkSums[checkIndexCounter] = positionPrice;
-		        System.out.println(description + " " + inOrderQuantity + "pc" + " " + "Price " + price*inOrderQuantity + " Discount " + discountAmount + "% " + "----" + positionPrice);
-            }
+			            positionPrice = price*inOrderQuantity-price*inOrderQuantity/100*discountAmount;
+			            checkSums[checkIndexCounter] = positionPrice;
+		                content = description + " " + inOrderQuantity + "pc" + " " + "Price " + price*inOrderQuantity + " Wholesale 10% " + "----" + positionPrice + "\n";	
+				        createFile(content);
+				        System.out.println(content);
+						
+			        } else {//если оптовой скидки нет применяет скидку дисконта из БД
+                        positionPrice = price*inOrderQuantity-price*inOrderQuantity/100*discountAmount;
+				        checkSums[checkIndexCounter] = positionPrice;
+		                content = description + " " + inOrderQuantity + "pc" + " " + "Price " + price*inOrderQuantity + " Discount " + discountAmount + "% " + "----" + positionPrice + "\n";
+                        System.out.println (content);
+				        createFile(content);
+			        }
+					
+		        } else {//в случае если доступное количество превышено
+				    positionPrice = 0;
+			        checkSums[checkIndexCounter] = positionPrice;
+			        content = "!!! Stock quantity exceed for " + description + ". Max available quantity is " + stockQuantity + "\n";
+			        createFile(content);
+			        System.out.println(content);
+			        }
+					
 			checkIndexCounter++;
+			
 		}
-        //стоимость всех позиций с примененными скидками
-		float totalPrice = 0;
+        //считает и добавляет в чек стоимость всех позиций с примененными скидками
+		totalPrice = 0;
 		for (int i = 0; i<checkSums.length; i++) {
 		totalPrice = totalPrice + checkSums[i];
 		}
+		content = "\nTotal price ----" + totalPrice;
+		createFile(content);
 		System.out.println ("Total price ----" + totalPrice);
 		}
 		
@@ -188,11 +260,15 @@ public class CheckRunner {
 			float price;
 			int stockQuantity;
 			String wholesale;
+			String content;
+			float totalPrice;
+			
+			clearFile(content="");
 			
 		    while(checkIndexCounter < purchasedProductsId.length-1) {
 			
 	        productIndex = Arrays.asList(productsIdArray).indexOf(purchasedProductsId[checkIndexCounter]);
-            inOrderQuantity = Arrays.asList(productsIdArray).indexOf(purchasedProductsQuantity[checkIndexCounter]);
+            inOrderQuantity = Integer.valueOf(purchasedProductsQuantity[checkIndexCounter]);
 	        description = productsDescriptionArray[productIndex];
 	        price = Float.valueOf(productsPriceArray[productIndex]);
 	        stockQuantity = Integer.valueOf(productsQuantityArray[productIndex]);
@@ -200,53 +276,92 @@ public class CheckRunner {
 			positionPrice = price*inOrderQuantity-price*inOrderQuantity/100*discountAmount;
 			checkSums[checkIndexCounter] = positionPrice;
 			
-            System.out.println(description + " " + inOrderQuantity + "pc" + " " + "Price " + price*inOrderQuantity + " Discount " + discountAmount + "% " + "----" + positionPrice);	
-		    checkIndexCounter++;
+			    if (inOrderQuantity <= stockQuantity) {
+			
+                    content = description + " " + inOrderQuantity + "pc" + " " + "Price " + price*inOrderQuantity + " Discount " + discountAmount + "% " + "----" + positionPrice + "\n";
+                    System.out.println (content);
+                    createFile(content);	
+		
+			        } else {
+						positionPrice = 0;
+			            checkSums[checkIndexCounter] = positionPrice;
+			            content = "!!! Stock quantity exceed for " + description + ". Max available quantity is " + stockQuantity + "\n";
+			            createFile(content);
+			            System.out.println(content);
+					}
+					
+			checkIndexCounter++;
 			}
 
         //стоимость всех позиций с примененными скидками
-		float totalPrice = 0;
+		totalPrice = 0;
 		for (int i = 0; i<checkSums.length; i++) {
 		totalPrice = totalPrice + checkSums[i];
 		}
 		System.out.println ("Total price ----" + totalPrice);
+		content = "\nTotal price ----" + totalPrice;
+		createFile(content);
 	}
 	} else {
 		System.out.println ("\nNo discount card\n");
 		
 			float [] checkSums = new float[args.length];
 		    float positionPrice;
+			int productIndex;
+			int inOrderQuantity;
+			String description;
+			float price;
+			int stockQuantity;
+			String wholesale;
+			String content;
+			float totalPrice;
+			
+			clearFile(content="");
 			
 		    while (checkIndexCounter < purchasedProductsId.length) {
 			 
 		    //переменные для генерации Result.csv
-		    int productIndex = Arrays.asList(productsIdArray).indexOf(purchasedProductsId[checkIndexCounter]);
-            int inOrderQuantity = Arrays.asList(productsIdArray).indexOf(purchasedProductsQuantity[checkIndexCounter]);
-	        String description = productsDescriptionArray[productIndex];
-	        float price = Float.valueOf(productsPriceArray[productIndex]);
-	        int stockQuantity = Integer.valueOf(productsQuantityArray[productIndex]);
-	        String wholesale = productsWholesaleArray[productIndex];
+		    productIndex = Arrays.asList(productsIdArray).indexOf(purchasedProductsId[checkIndexCounter]);
+            inOrderQuantity = Integer.valueOf(purchasedProductsQuantity[checkIndexCounter]);
+	        description = productsDescriptionArray[productIndex];
+	        price = Float.valueOf(productsPriceArray[productIndex]);
+	        stockQuantity = Integer.valueOf(productsQuantityArray[productIndex]);
+	        wholesale = productsWholesaleArray[productIndex];
 			
-			
-		        if (wholesale.equals("+") && inOrderQuantity > 4 ) {
+			    if (inOrderQuantity <= stockQuantity) {
+		            if (wholesale.equals("+") && inOrderQuantity > 4 ) {
 				
-				    positionPrice = price*inOrderQuantity*0.9f;
-		            checkSums[checkIndexCounter] = positionPrice;
-		            System.out.println(description + " " + inOrderQuantity + "pc " + "Price " + price*inOrderQuantity + " Wholesale -10% " + "----" + positionPrice);	
-                } else {
-			      positionPrice = price*inOrderQuantity;
-			      checkSums[checkIndexCounter] = positionPrice;
-	              System.out.println(description + " " + inOrderQuantity + "pc" + " " + "----" + positionPrice);	
-                }
+				        positionPrice = price*inOrderQuantity*0.9f;
+		                checkSums[checkIndexCounter] = positionPrice;
+		                content = description + " " + inOrderQuantity + "pc " + "Price " + price*inOrderQuantity + " Wholesale -10% " + "----" + positionPrice + "\n";	
+                        createFile(content);
+                        System.out.println (content);					
+				    } else {
+			          positionPrice = price*inOrderQuantity;
+			          checkSums[checkIndexCounter] = positionPrice;
+	                  content = description + " " + inOrderQuantity + "pc" + " " + "----" + positionPrice + "\n";
+                      createFile(content);
+				      System.out.println(content);				  
+                    }
+				} else {
+				    positionPrice = 0;
+			        checkSums[checkIndexCounter] = positionPrice;
+			        content = "!!! Stock quantity exceed for " + description + ". Max available quantity is " + stockQuantity + "\n";
+			        createFile(content);
+			        System.out.println(content);
+				}
 			
             checkIndexCounter++;
 	     }
 		 
-		float totalPrice = 0;
+		totalPrice = 0;
+		
 		for (int i = 0; i<checkSums.length; i++) {
 		totalPrice = totalPrice + checkSums[i];
 		}
 		System.out.println ("Total price ----" + totalPrice);
+		content = "\nTotal price ----" + totalPrice;
+		createFile(content);
 }
 }
 }
